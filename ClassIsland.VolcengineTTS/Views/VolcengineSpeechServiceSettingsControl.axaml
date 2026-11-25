@@ -54,20 +54,26 @@
                                       IsCheckedChanged="ShowTokenCheckBox_OnIsCheckedChanged" />
                         </Grid>
 
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Resource ID (V3)"
-                                   VerticalAlignment="Center"
-                                   IsVisible="{Binding IsV3Protocol}" />
-                        <ComboBox Grid.Row="3" Grid.Column="1"
-                                  IsVisible="{Binding IsV3Protocol}"
-                                  IsEditable="True"
+                                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Resource ID (V3)"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding IsV3Protocol}" />
+                     <Grid Grid.Row="3" Grid.Column="1"
+                           ColumnDefinitions="*,*" ColumnSpacing="8"
+                           IsVisible="{Binding IsV3Protocol}">
+                         <TextBox Grid.Column="0"
                                   Text="{Binding ResourceId, Mode=TwoWay}"
-                                  HorizontalAlignment="Stretch">
-                            <ComboBoxItem Content="seed-tts-2.0" />
-                            <ComboBoxItem Content="seed-tts-1.0" />
-                            <ComboBoxItem Content="seed-icl-2.0" />
-                            <ComboBoxItem Content="seed-icl-1.0" />
-                            <ComboBoxItem Content="volc.service_type.10029" />
-                        </ComboBox>
+                                  Watermark="如 seed-tts-2.0" />
+                         <ComboBox Grid.Column="1" x:Name="ResourceIdPresetComboBox"
+                                   HorizontalAlignment="Stretch"
+                                   PlaceholderText="常用 Resource ID 预设"
+                                   SelectionChanged="ResourceIdPresetComboBox_OnSelectionChanged">
+                             <ComboBoxItem Content="seed-tts-2.0" Tag="seed-tts-2.0" />
+                             <ComboBoxItem Content="seed-tts-1.0" Tag="seed-tts-1.0" />
+                             <ComboBoxItem Content="seed-icl-2.0" Tag="seed-icl-2.0" />
+                             <ComboBoxItem Content="seed-icl-1.0" Tag="seed-icl-1.0" />
+                             <ComboBoxItem Content="volc.service_type.10029" Tag="volc.service_type.10029" />
+                         </ComboBox>
+                     </Grid>
 
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="Cluster (V1)"
                                    VerticalAlignment="Center"
