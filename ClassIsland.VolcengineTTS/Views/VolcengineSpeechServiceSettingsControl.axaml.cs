@@ -180,6 +180,20 @@ public partial class VolcengineSpeechServiceSettingsControl : SpeechProviderCont
         }
     }
 
+    private void ResourceIdPresetComboBox_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (_isInitializing || sender is not ComboBox combo || combo.SelectedItem is not ComboBoxItem item)
+        {
+            return;
+        }
+
+        var value = item.Tag?.ToString();
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            _settings.ResourceId = value;
+        }
+    }
+
     private void ShowTokenCheckBox_OnIsCheckedChanged(object? sender, RoutedEventArgs e)
     {
         var tokenBox = this.FindControl<TextBox>("TokenTextBox");
