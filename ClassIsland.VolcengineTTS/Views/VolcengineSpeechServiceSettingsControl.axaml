@@ -1,0 +1,227 @@
+<controls:SpeechProviderControlBase
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:ClassIsland.Core.Abstractions.Controls;assembly=ClassIsland.Core"
+    xmlns:converters="clr-namespace:ClassIsland.VolcengineTTS.Converters"
+    x:Class="ClassIsland.VolcengineTTS.Views.VolcengineSpeechServiceSettingsControl"
+    x:CompileBindings="False">
+
+    <controls:SpeechProviderControlBase.Resources>
+        <converters:DecimalNumberConverter x:Key="DecimalConverter" />
+    </controls:SpeechProviderControlBase.Resources>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="14" Margin="4,4,12,16">
+
+            <!-- 标题与简介 -->
+            <StackPanel Spacing="4">
+                <TextBlock Text="火山语音引擎（豆包语音 TTS）" FontSize="18" FontWeight="SemiBold" />
+                <TextBlock Text="支持豆包语音大模型 V3 单向流式接口与经典 V1 接口，提供多音色预设与本地短语缓存。"
+                           Opacity="0.75"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+
+            <!-- 1. 接入协议与鉴权配置 -->
+            <Border BorderThickness="1" CornerRadius="8" Padding="14"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="接口与鉴权配置" FontSize="15" FontWeight="SemiBold" />
+
+                    <Grid ColumnDefinitions="130,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="10">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="接入协议" VerticalAlignment="Center" />
+                        <ComboBox Grid.Row="0" Grid.Column="1" x:Name="ProtocolComboBox"
+                                  HorizontalAlignment="Stretch"
+                                  SelectionChanged="ProtocolComboBox_OnSelectionChanged">
+                            <ComboBoxItem Content="豆包语音大模型 V3（/api/v3/tts/unidirectional）" Tag="V3BigModel" />
+                            <ComboBoxItem Content="火山引擎经典语音合成 V1（/api/v1/tts）" Tag="V1Classic" />
+                        </ComboBox>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="App ID" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="1" Grid.Column="1"
+                                 Text="{Binding AppId, Mode=TwoWay}"
+                                 Watermark="控制台应用 App ID（V3 使用纯 X-Api-Key 时可留空）" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Access Token" VerticalAlignment="Center" />
+                        <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <TextBox Grid.Column="0" x:Name="TokenTextBox"
+                                     Text="{Binding AccessToken, Mode=TwoWay}"
+                                     PasswordChar="•"
+                                     Watermark="填写 Access Token 或 X-Api-Key" />
+                            <CheckBox Grid.Column="1" x:Name="ShowTokenCheckBox"
+                                      Content="显示"
+                                      VerticalAlignment="Center"
+                                      IsCheckedChanged="ShowTokenCheckBox_OnIsCheckedChanged" />
+                        </Grid>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Resource ID (V3)"
+                                   VerticalAlignment="Center"
+                                   IsVisible="{Binding IsV3Protocol}" />
+                        <ComboBox Grid.Row="3" Grid.Column="1"
+                                  IsVisible="{Binding IsV3Protocol}"
+                                  IsEditable="True"
+                                  Text="{Binding ResourceId, Mode=TwoWay}"
+                                  HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="seed-tts-2.0" />
+                            <ComboBoxItem Content="seed-tts-1.0" />
+                            <ComboBoxItem Content="seed-icl-2.0" />
+                            <ComboBoxItem Content="seed-icl-1.0" />
+                            <ComboBoxItem Content="volc.service_type.10029" />
+                        </ComboBox>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Cluster (V1)"
+                                   VerticalAlignment="Center"
+                                   IsVisible="{Binding IsV1Protocol}" />
+                        <TextBox Grid.Row="3" Grid.Column="1"
+                                 IsVisible="{Binding IsV1Protocol}"
+                                 Text="{Binding Cluster, Mode=TwoWay}"
+                                 Watermark="通常为 volcano_tts 或 volcano_icl" />
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="API 地址" VerticalAlignment="Center" />
+                        <Grid Grid.Row="4" Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <TextBox Grid.Column="0"
+                                     Text="{Binding ApiEndpoint, Mode=TwoWay}"
+                                     Watermark="留空将使用官方默认接口地址" />
+                            <Button Grid.Column="1" Content="恢复默认" Click="ResetEndpointButton_OnClick" />
+                        </Grid>
+
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="用户标识 UID" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="5" Grid.Column="1"
+                                 Text="{Binding UserId, Mode=TwoWay}"
+                                 Watermark="默认 classisland-user" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 2. 音色与发音参数 -->
+            <Border BorderThickness="1" CornerRadius="8" Padding="14"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="音色与音频参数" FontSize="15" FontWeight="SemiBold" />
+
+                    <Grid ColumnDefinitions="130,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="10">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="推荐音色预设" VerticalAlignment="Center" />
+                        <ComboBox Grid.Row="0" Grid.Column="1" x:Name="PresetComboBox"
+                                  HorizontalAlignment="Stretch"
+                                  PlaceholderText="选择预设音色后将自动填入下方参数"
+                                  SelectionChanged="PresetComboBox_OnSelectionChanged" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="音色 ID" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="1" Grid.Column="1"
+                                 Text="{Binding Speaker, Mode=TwoWay}"
+                                 Watermark="输入 speaker / voice_type，例如 zh_female_xiaohe_uranus_bigtts" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="音频格式与采样率" VerticalAlignment="Center" />
+                        <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <ComboBox Grid.Column="0" x:Name="FormatComboBox"
+                                      HorizontalAlignment="Stretch"
+                                      SelectionChanged="FormatComboBox_OnSelectionChanged">
+                                <ComboBoxItem Content="MP3（推荐，体积小）" Tag="mp3" />
+                                <ComboBoxItem Content="WAV（无损封装）" Tag="wav" />
+                                <ComboBoxItem Content="PCM（自动转 WAV）" Tag="pcm" />
+                            </ComboBox>
+                            <ComboBox Grid.Column="1" x:Name="SampleRateComboBox"
+                                      HorizontalAlignment="Stretch"
+                                      SelectionChanged="SampleRateComboBox_OnSelectionChanged">
+                                <ComboBoxItem Content="24000 Hz（推荐）" Tag="24000" />
+                                <ComboBoxItem Content="16000 Hz" Tag="16000" />
+                                <ComboBoxItem Content="8000 Hz" Tag="8000" />
+                            </ComboBox>
+                        </Grid>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="语速调节 (%)" VerticalAlignment="Center" />
+                        <Grid Grid.Row="3" Grid.Column="1" ColumnDefinitions="*,60" ColumnSpacing="8">
+                            <Slider Grid.Column="0" Minimum="-50" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True"
+                                    Value="{Binding SpeechRatePercent, Mode=TwoWay}" />
+                            <TextBlock Grid.Column="1" Text="{Binding SpeechRatePercent}" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                        </Grid>
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="音量增益 (%)" VerticalAlignment="Center" />
+                        <Grid Grid.Row="4" Grid.Column="1" ColumnDefinitions="*,60" ColumnSpacing="8">
+                            <Slider Grid.Column="0" Minimum="-50" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True"
+                                    Value="{Binding LoudnessPercent, Mode=TwoWay}" />
+                            <TextBlock Grid.Column="1" Text="{Binding LoudnessPercent}" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                        </Grid>
+
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="音调倍率 (V1)"
+                                   VerticalAlignment="Center"
+                                   IsVisible="{Binding IsV1Protocol}" />
+                        <NumericUpDown Grid.Row="5" Grid.Column="1"
+                                       IsVisible="{Binding IsV1Protocol}"
+                                       Minimum="0.1" Maximum="3.0" Increment="0.1" FormatString="0.0"
+                                       Value="{Binding PitchRatio, Mode=TwoWay, Converter={StaticResource DecimalConverter}}" />
+
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="情感标签（可选）" VerticalAlignment="Center" />
+                        <Grid Grid.Row="6" Grid.Column="1" ColumnDefinitions="*,110" ColumnSpacing="8">
+                            <TextBox Grid.Column="0"
+                                     Text="{Binding Emotion, Mode=TwoWay}"
+                                     Watermark="如 happy / sad / angry，留空使用音色默认" />
+                            <NumericUpDown Grid.Column="1"
+                                           Minimum="0.5" Maximum="5.0" Increment="0.1" FormatString="0.0"
+                                           ToolTip.Tip="情感强度"
+                                           Value="{Binding EmotionScale, Mode=TwoWay, Converter={StaticResource DecimalConverter}}" />
+                        </Grid>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 3. 缓存与请求控制 -->
+            <Border BorderThickness="1" CornerRadius="8" Padding="14"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="缓存与网络策略" FontSize="15" FontWeight="SemiBold" />
+
+                    <CheckBox Content="启用本地短语持久化缓存（相同配置与文本直接命中本地音频，节省 API 额度）"
+                              IsChecked="{Binding EnableCache, Mode=TwoWay}" />
+
+                    <Grid ColumnDefinitions="130,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="10">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="缓存容量上限 (MB)" VerticalAlignment="Center" />
+                        <NumericUpDown Grid.Row="0" Grid.Column="1"
+                                       Minimum="10" Maximum="4096" Increment="50"
+                                       Value="{Binding MaxCacheSizeMb, Mode=TwoWay, Converter={StaticResource DecimalConverter}}" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="超时 / 重试" VerticalAlignment="Center" />
+                        <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <NumericUpDown Grid.Column="0" Minimum="3" Maximum="120" Increment="1"
+                                           Watermark="超时（秒）"
+                                           Value="{Binding RequestTimeoutSeconds, Mode=TwoWay, Converter={StaticResource DecimalConverter}}" />
+                            <NumericUpDown Grid.Column="1" Minimum="0" Maximum="5" Increment="1"
+                                           Watermark="重试次数"
+                                           Value="{Binding MaxRetryCount, Mode=TwoWay, Converter={StaticResource DecimalConverter}}" />
+                        </Grid>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="当前缓存占用" VerticalAlignment="Center" />
+                        <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <TextBlock Grid.Column="0" x:Name="CacheStatsTextBlock" VerticalAlignment="Center" Opacity="0.8" />
+                            <Button Grid.Column="1" Content="清空缓存" Click="ClearCacheButton_OnClick" />
+                        </Grid>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 4. 实时测试播报 -->
+            <Border BorderThickness="1" CornerRadius="8" Padding="14"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="语音合成测试" FontSize="15" FontWeight="SemiBold" />
+                    <TextBox x:Name="TestTextBox"
+                             Text="同学们请注意，下一节课即将开始，请做好课前准备。"
+                             AcceptsReturn="False"
+                             Watermark="输入要测试播报的文本" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="TestSpeakButton" Content="测试合成并播放" Click="TestSpeakButton_OnClick" />
+                        <Button x:Name="StopSpeakButton" Content="停止测试" Click="StopSpeakButton_OnClick" IsEnabled="False" />
+                    </StackPanel>
+                    <TextBlock x:Name="StatusTextBlock"
+                               TextWrapping="Wrap"
+                               Opacity="0.85"
+                               IsVisible="False" />
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</controls:SpeechProviderControlBase>
