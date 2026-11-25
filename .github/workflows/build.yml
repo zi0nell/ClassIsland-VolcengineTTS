@@ -1,0 +1,33 @@
+name: Build and Package ClassIsland Plugin
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ '*.*.*.*', 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Build plugin
+        run: dotnet build ClassIsland.VolcengineTTS/ClassIsland.VolcengineTTS.csproj --configuration Release
+
+      - name: Upload .cipx Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ClassIsland.VolcengineTTS.cipx
+          path: ClassIsland.VolcengineTTS/cipx/ClassIsland.VolcengineTTS.cipx
